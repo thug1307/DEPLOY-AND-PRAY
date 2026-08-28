@@ -1,0 +1,8 @@
+.env
+venv/
+__pycache__/
+*.pyc
+ps1.db
+uploads/*
+!uploads/.gitkeep
+ml/*.joblib

@@ -1,10 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Camera, MapPin, CheckCircle, ArrowLeft, X, RefreshCw, SwitchCamera } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { createReport, uploadImage } from '../services/api';
 import './ReportHazardPage.css';
 
 const ReportHazardPage = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submittedReport, setSubmittedReport] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [isLocating, setIsLocating] = useState(false);
   const [formData, setFormData] = useState({
     hazardType: '',
@@ -131,11 +135,51 @@ const ReportHazardPage = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Here API integration would happen (e.g. POST /api/reports)
+const CATEGORY_MAP = {
+  'Road/Hillside Crack': 'ROAD_CRACK',
+  'Rockfall': 'ROCKFALL',
+  'Soil Movement': 'SOIL_MOVEMENT',
+  'Water Seepage': 'WATER_SEEPAGE',
+  'Landslide': 'LANDSLIDE',
+  'Other': 'OTHER',
+};
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  setIsSubmitting(true);
+  setSubmitError('');
+
+  try {
+    let imageUrl = null;
+
+    if (formData.photo) {
+      const uploaded = await uploadImage(formData.photo);
+      imageUrl = uploaded.path;
+    }
+
+    const report = await createReport({
+      description: formData.description,
+      category: CATEGORY_MAP[formData.hazardType] || 'OTHER',
+      latitude: Number(formData.latitude),
+      longitude: Number(formData.longitude),
+      image_url: imageUrl,
+    });
+
+    console.log('Report successfully created:', report);
+
+    setSubmittedReport(report);
     setIsSubmitted(true);
-  };
+
+  } catch (error) {
+    console.error('Report submission failed:', error);
+    setSubmitError(
+      error.message || 'Failed to submit report. Please try again.'
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   if (isSubmitted) {
     return (

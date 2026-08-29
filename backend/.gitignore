@@ -1,0 +1,10 @@
+.env
+venv/
+__pycache__/
+*.pyc
+ps1.db
+uploads/*
+!uploads/.gitkeep
+ml/*.joblib
+# Large GIS raster
+GIS/NER_DEM_merged.tif

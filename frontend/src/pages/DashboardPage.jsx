@@ -1,169 +1,220 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import {
+  Map,
+  BrainCircuit,
+  BellRing,
+  FileWarning,
+  ShieldCheck,
+  ArrowRight,
+  Activity,
+  Mountain,
+} from 'lucide-react';
 
 const DashboardPage = () => {
   return (
-    <>
-      {/* Map Background (Simulated) */}
-      <div className="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none" data-alt="A dark, high-tech topographical map of Northeast India." data-location="Northeast India" style={{ "backgroundImage": "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1600')" }}></div>
-      
-      {/* Hotspots Overlay (Simulated) */}
-      <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-        {/* Hotspot 1 */}
-        <div className="absolute top-[40%] left-[30%] w-32 h-32 -ml-16 -mt-16 rounded-full bg-error/10 border border-error/30 animate-pulse flex items-center justify-center glow-active" style={{ "boxShadow": "0 0 30px rgba(255, 180, 171, 0.4)" }}>
-          <div className="w-4 h-4 rounded-full bg-error"></div>
-        </div>
-        {/* Hotspot 2 */}
-        <div className="absolute top-[60%] left-[55%] w-24 h-24 -ml-12 -mt-12 rounded-full bg-secondary-container/10 border border-secondary-container/30 flex items-center justify-center">
-          <div className="w-3 h-3 rounded-full bg-secondary-container"></div>
-        </div>
-      </div>
-      
-      {/* Content Overlay */}
-      <div className="relative z-20 flex-1 flex flex-col p-gutter gap-md overflow-hidden pointer-events-auto h-full min-h-screen">
-        {/* Top Metrics Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-md shrink-0">
-          {/* Card 1 */}
-          <div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-error to-error-container"></div>
-            <div className="flex justify-between items-start">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">Active Alerts</span>
-              <span className="material-symbols-outlined text-error">warning</span>
-            </div>
-            <div className="font-display-lg text-display-lg text-error glow-text-error mt-2">12</div>
-            <div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-              <span className="material-symbols-outlined text-[16px] text-error">trending_up</span>
-              +3 since last hour
-            </div>
+    <div className="min-h-screen bg-background text-on-surface overflow-y-auto">
+      {/* Hero Section */}
+      <section className="relative px-6 md:px-10 lg:px-14 pt-10 pb-12">
+        {/* Background glow */}
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto">
+          {/* Status badge */}
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-semibold tracking-wide mb-6">
+            <Activity size={14} />
+            AI-POWERED LANDSLIDE EARLY WARNING SYSTEM
           </div>
-          {/* Card 2 */}
-          <div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-container to-secondary"></div>
-            <div className="flex justify-between items-start">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">Critical Zones</span>
-              <span className="material-symbols-outlined text-secondary-container">location_searching</span>
-            </div>
-            <div className="font-display-lg text-display-lg text-secondary-container mt-2" style={{ "textShadow": "0 0 10px rgba(255, 87, 26, 0.5)" }}>04</div>
-            <div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-              High risk thresholds met
-            </div>
-          </div>
-          {/* Card 3 */}
-          <div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-fixed-dim to-primary-container"></div>
-            <div className="flex justify-between items-start">
-              <span className="font-label-caps text-label-caps text-on-surface-variant">Citizen Reports</span>
-              <span className="material-symbols-outlined text-primary-fixed-dim">campaign</span>
-            </div>
-            <div className="font-display-lg text-display-lg text-primary-fixed-dim glow-text-primary mt-2">89</div>
-            <div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-              <span className="text-tertiary-fixed-dim">98% verified</span> in past 24h
+
+          <div className="max-w-4xl">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight">
+              Protecting the{' '}
+              <span className="text-primary">
+                North Eastern Region
+              </span>{' '}
+              from landslide risk.
+            </h1>
+
+            <p className="mt-6 text-lg md:text-xl text-on-surface-variant max-w-3xl leading-relaxed">
+              An integrated GIS and Machine Learning platform for monitoring
+              landslide-prone areas, assessing location-based risk, receiving
+              incident reports, and supporting faster emergency response
+              across Northeast India.
+            </p>
+
+            {/* Primary actions */}
+            <div className="flex flex-wrap gap-4 mt-8">
+              <Link
+                to="/monitoring"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 transition-all shadow-lg"
+              >
+                Open Risk Monitoring
+                <ArrowRight size={18} />
+              </Link>
+
+              <Link
+                to="/report"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-lg border border-white/15 bg-white/5 text-on-surface font-semibold hover:bg-white/10 transition-all"
+              >
+                <FileWarning size={18} />
+                Report an Incident
+              </Link>
             </div>
           </div>
         </div>
-        
-        {/* Bottom Area: Map Tools & Side Panel */}
-        <div className="flex-1 flex gap-md min-h-0">
-          {/* Map Controls (Left) */}
-          <div className="flex flex-col gap-sm justify-end shrink-0 pointer-events-none pb-4">
-            <div className="glass-panel rounded-full p-2 flex flex-col gap-2 pointer-events-auto">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-                <span className="material-symbols-outlined">add</span>
-              </button>
-              <div className="w-full h-px bg-white/10 my-1"></div>
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-                <span className="material-symbols-outlined">remove</span>
-              </button>
+      </section>
+
+      {/* What the system does */}
+      <section className="px-6 md:px-10 lg:px-14 pb-12">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-6">
+            <p className="text-xs font-semibold tracking-widest text-primary uppercase">
+              System Overview
+            </p>
+
+            <h2 className="text-2xl md:text-3xl font-bold mt-2">
+              From terrain data to actionable warnings
+            </h2>
+
+            <p className="text-on-surface-variant mt-2 max-w-2xl">
+              The platform combines geospatial intelligence, machine learning,
+              field reports, and emergency protocols into a single monitoring
+              workflow.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* GIS */}
+            <div className="glass-panel rounded-xl p-5 border border-white/10 hover:border-primary/30 transition-all">
+              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                <Map size={22} />
+              </div>
+
+              <h3 className="font-bold text-lg">
+                GIS Risk Mapping
+              </h3>
+
+              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+                Visualize landslide susceptibility across the NER using
+                geospatial terrain and risk data.
+              </p>
             </div>
-            <div className="glass-panel rounded-full p-2 pointer-events-auto mt-2">
-              <button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-                <span className="material-symbols-outlined">my_location</span>
-              </button>
+
+            {/* ML */}
+            <div className="glass-panel rounded-xl p-5 border border-white/10 hover:border-secondary/30 transition-all">
+              <div className="w-11 h-11 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary mb-4">
+                <BrainCircuit size={22} />
+              </div>
+
+              <h3 className="font-bold text-lg">
+                ML Risk Prediction
+              </h3>
+
+              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+                Assess a specific location and estimate its landslide risk
+                probability using the prediction model.
+              </p>
+            </div>
+
+            {/* Alerts */}
+            <div className="glass-panel rounded-xl p-5 border border-white/10 hover:border-error/30 transition-all">
+              <div className="w-11 h-11 rounded-lg bg-error/10 flex items-center justify-center text-error mb-4">
+                <BellRing size={22} />
+              </div>
+
+              <h3 className="font-bold text-lg">
+                Critical Alerts
+              </h3>
+
+              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+                Identify high and critical-risk situations and surface them
+                for administrative attention.
+              </p>
+            </div>
+
+            {/* Emergency */}
+            <div className="glass-panel rounded-xl p-5 border border-white/10 hover:border-primary/30 transition-all">
+              <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                <ShieldCheck size={22} />
+              </div>
+
+              <h3 className="font-bold text-lg">
+                Emergency Response
+              </h3>
+
+              <p className="text-sm text-on-surface-variant mt-2 leading-relaxed">
+                Support incident reporting, response coordination, and
+                emergency protocols when risk becomes critical.
+              </p>
             </div>
           </div>
-          
-          {/* Spacer for Map */}
-          <div className="flex-1"></div>
-          
-          {/* Detail Panel (Right) */}
-          <div className="w-full md:w-[400px] glass-panel rounded-xl flex flex-col h-full overflow-hidden border-t-4 border-error pointer-events-auto shrink-0 shadow-2xl mb-4">
-            {/* Panel Header */}
-            <div className="p-md border-b border-white/10 bg-surface/50">
-              <div className="flex justify-between items-start mb-2">
-                <div className="font-label-caps text-label-caps text-error flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[16px]">crisis_alert</span>
-                  Selected Hotspot
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="px-6 md:px-10 lg:px-14 pb-14">
+        <div className="max-w-7xl mx-auto">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 md:p-8">
+            <div className="flex flex-col lg:flex-row lg:items-center gap-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 text-primary mb-3">
+                  <Mountain size={20} />
+                  <span className="text-xs font-semibold tracking-widest uppercase">
+                    How it works
+                  </span>
                 </div>
-                <button className="text-on-surface-variant hover:text-on-surface transition-colors">
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
+
+                <h2 className="text-2xl font-bold">
+                  A unified early-warning workflow
+                </h2>
+
+                <p className="text-on-surface-variant mt-3 max-w-2xl leading-relaxed">
+                  Administrators can inspect regional risk, assess individual
+                  coordinates, review incoming incidents, and respond to
+                  critical situations from one platform.
+                </p>
               </div>
-              <h2 className="font-headline-lg text-headline-lg text-on-surface">Gangtok, Sikkim</h2>
-              <div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1">27.3389° N, 88.6065° E</div>
-            </div>
-            
-            {/* Panel Content */}
-            <div className="p-md flex-1 overflow-y-auto flex flex-col gap-lg custom-scrollbar">
-              {/* Risk Score */}
-              <div className="flex flex-col items-center justify-center py-sm">
-                <div className="relative w-32 h-32 flex items-center justify-center">
-                  <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" fill="none" r="45" stroke="#1A1A1A" strokeWidth="8"></circle>
-                    <circle className="text-error" cx="50" cy="50" fill="none" r="45" stroke="#ffb4ab" strokeDasharray="283" strokeDashoffset="34" strokeWidth="8" style={{ "filter": "drop-shadow(0 0 4px rgba(255, 180, 171, 0.5))" }}></circle>
-                  </svg>
-                  <div className="text-center z-10">
-                    <div className="font-display-lg text-display-lg text-error leading-none">88</div>
-                    <div className="font-label-caps text-label-caps text-on-surface-variant mt-1">/ 100</div>
-                  </div>
+
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-black/10 border border-white/5">
+                  <span className="text-primary font-bold">01</span>
+                  <span className="text-sm">Monitor GIS risk zones</span>
                 </div>
-                <div className="font-label-caps text-label-caps text-error mt-4 tracking-widest">CRITICAL RISK</div>
-              </div>
-              
-              {/* Telemetry Bars */}
-              <div className="flex flex-col gap-md">
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps mb-2">
-                    <span className="text-on-surface">Heavy Rainfall (24h)</span>
-                    <span className="text-secondary-container font-data-numeric">185mm</span>
-                  </div>
-                  <div className="h-2 rounded-full progress-track overflow-hidden relative">
-                    <div className="absolute top-0 left-0 h-full bg-secondary-container w-[85%]" style={{ "boxShadow": "0 0 10px rgba(255, 87, 26, 0.5)" }}></div>
-                    <div className="absolute top-0 left-[75%] h-full w-px bg-white/50 z-10"></div>
-                  </div>
+
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-black/10 border border-white/5">
+                  <span className="text-primary font-bold">02</span>
+                  <span className="text-sm">Assess coordinates with ML</span>
                 </div>
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps mb-2">
-                    <span className="text-on-surface">Soil Moisture Index</span>
-                    <span className="text-primary-fixed-dim font-data-numeric">62%</span>
-                  </div>
-                  <div className="h-2 rounded-full progress-track overflow-hidden relative">
-                    <div className="absolute top-0 left-0 h-full bg-primary-fixed-dim w-[62%]" style={{ "boxShadow": "0 0 10px rgba(0, 218, 248, 0.5)" }}></div>
-                  </div>
+
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-black/10 border border-white/5">
+                  <span className="text-primary font-bold">03</span>
+                  <span className="text-sm">Receive incident reports</span>
                 </div>
-                <div>
-                  <div className="flex justify-between font-label-caps text-label-caps mb-2">
-                    <span className="text-on-surface">Slope Stability</span>
-                    <span className="text-error font-data-numeric">Marginal</span>
-                  </div>
-                  <div className="h-2 rounded-full progress-track overflow-hidden relative">
-                    <div className="absolute top-0 left-0 h-full bg-error w-[90%]" style={{ "boxShadow": "0 0 10px rgba(255, 180, 171, 0.5)" }}></div>
-                  </div>
+
+                <div className="flex items-center gap-3 p-4 rounded-lg bg-black/10 border border-white/5">
+                  <span className="text-primary font-bold">04</span>
+                  <span className="text-sm">Trigger appropriate response</span>
                 </div>
-              </div>
-              
-              {/* Actions */}
-              <div className="mt-auto pt-md flex flex-col gap-sm">
-                <button className="w-full bg-primary-fixed-dim text-on-primary font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary-fixed transition-colors font-bold">
-                  Issue Evacuation Warning
-                </button>
-                <button className="w-full border border-primary-fixed-dim text-primary-fixed-dim font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary-fixed-dim/10 transition-colors">
-                  View Drone Imagery
-                </button>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </>
+      </section>
+
+      {/* Footer information */}
+      <section className="px-6 md:px-10 lg:px-14 pb-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between gap-3 text-xs text-on-surface-variant">
+          <span>
+            AI-Based Early Warning & Landslide Risk Monitoring System
+          </span>
+
+          <span>
+            North Eastern Region of India • SIH 2026
+          </span>
+        </div>
+      </section>
+    </div>
   );
 };
 

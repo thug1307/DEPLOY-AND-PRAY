@@ -1,170 +1,1166 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+} from 'react-leaflet';
+
+import L from 'leaflet';
+
+import 'leaflet/dist/leaflet.css';
+
+import {
+  Map as MapIcon,
+  Crosshair,
+  Navigation,
+  BrainCircuit,
+  Loader2,
+  AlertTriangle,
+  CheckCircle,
+} from 'lucide-react';
+
+
+// =====================================================
+// BACKEND
+// =====================================================
+
+const API_BASE = 'http://127.0.0.1:8000/api';
+
+
+// =====================================================
+// NER MAP CENTER
+// =====================================================
+
+const NER_CENTER = [25.8, 93.2];
+
+
+// =====================================================
+// LEAFLET MARKER FIX
+// =====================================================
+
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+
+  iconUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+
+  shadowUrl:
+    'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+
+// =====================================================
+// MAP CLICK HANDLER
+// =====================================================
+
+function MapClickHandler({ onLocationSelect }) {
+
+  useMapEvents({
+
+    click(event) {
+
+      onLocationSelect({
+        lat: event.latlng.lat,
+        lng: event.latlng.lng,
+      });
+
+    },
+
+  });
+
+  return null;
+}
+
+
+// =====================================================
+// MAIN MONITORING PAGE
+// =====================================================
 
 const MonitoringPage = () => {
-  return (
-    <div className="flex-1 overflow-hidden flex flex-col p-margin-mobile md:p-gutter">
-{/* Mobile TopAppBar (Visible only on mobile) */}
 
-{/* Map Background (Simulated) */}
-<div className="absolute inset-0 z-0 opacity-40 mix-blend-screen pointer-events-none" data-alt="A dark, high-tech topographical map of Northeast India. The map uses deep blues and blacks with subtle glowing grid lines. The terrain is detailed, emphasizing mountainous regions. The aesthetic is cyber-physical command center, highly detailed, technical, data-driven visualization." data-location="Northeast India" style={{ "backgroundImage": "url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1600')" }}></div>
-{/* Hotspots Overlay (Simulated) */}
-<div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
-{/* Hotspot 1 */}
-<div className="absolute top-[40%] left-[30%] w-32 h-32 -ml-16 -mt-16 rounded-full bg-error/10 border border-error/30 animate-pulse flex items-center justify-center glow-active" style={{ "boxShadow": "0 0 30px rgba(255, 180, 171, 0.4)" }}>
-<div className="w-4 h-4 rounded-full bg-error"></div>
-</div>
-{/* Hotspot 2 */}
-<div className="absolute top-[60%] left-[55%] w-24 h-24 -ml-12 -mt-12 rounded-full bg-secondary-container/10 border border-secondary-container/30 flex items-center justify-center">
-<div className="w-3 h-3 rounded-full bg-secondary-container"></div>
-</div>
-</div>
-{/* Content Overlay */}
-<div className="relative z-20 flex-1 flex flex-col p-gutter gap-md overflow-hidden pointer-events-auto h-full">
-{/* Top Metrics Row */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-md shrink-0">
-{/* Card 1 */}
-<div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-error to-error-container"></div>
-<div className="flex justify-between items-start">
-<span className="font-label-caps text-label-caps text-on-surface-variant">Active Alerts</span>
-<span className="material-symbols-outlined text-error">warning</span>
-</div>
-<div className="font-display-lg text-display-lg text-error glow-text-error mt-2">12</div>
-<div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-<span className="material-symbols-outlined text-[16px] text-error">trending_up</span>
-                        +3 since last hour
+  const [selectedLocation, setSelectedLocation] =
+    useState(null);
+
+  const [selectedDate, setSelectedDate] =
+    useState('2024-08-15');
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [riskResult, setRiskResult] =
+    useState(null);
+
+  const [error, setError] =
+    useState('');
+
+
+  // =====================================================
+  // LOCATION SELECT
+  // =====================================================
+
+  const handleLocationSelect = (location) => {
+
+    setSelectedLocation(location);
+
+    setRiskResult(null);
+
+    setError('');
+
+  };
+
+
+  // =====================================================
+  // ML ASSESSMENT
+  // =====================================================
+
+  const runMLAssessment = async () => {
+
+    if (!selectedLocation) {
+
+      setError(
+        'Please select a location on the map.'
+      );
+
+      return;
+
+    }
+
+
+    if (!selectedDate) {
+
+      setError(
+        'Please select a date.'
+      );
+
+      return;
+
+    }
+
+
+    setLoading(true);
+
+    setError('');
+
+    setRiskResult(null);
+
+
+    try {
+
+      const payload = {
+
+        latitude:
+          selectedLocation.lat,
+
+        longitude:
+          selectedLocation.lng,
+
+        date:
+          selectedDate,
+
+      };
+
+
+      console.log(
+        'Sending location to GIS + ML:',
+        payload
+      );
+
+
+      const response = await fetch(
+
+        `${API_BASE}/risk/predict`,
+
+        {
+
+          method: 'POST',
+
+          headers: {
+
+            'Content-Type':
+              'application/json',
+
+            Accept:
+              'application/json',
+
+          },
+
+          body:
+            JSON.stringify(payload),
+
+        }
+
+      );
+
+
+      if (!response.ok) {
+
+        let message =
+          `Prediction API returned status ${response.status}`;
+
+
+        try {
+
+          const errorData =
+            await response.json();
+
+          if (errorData.detail) {
+
+            message =
+              typeof errorData.detail === 'string'
+                ? errorData.detail
+                : JSON.stringify(
+                    errorData.detail
+                  );
+
+          }
+
+        } catch {
+
+          // Keep default error.
+
+        }
+
+
+        throw new Error(message);
+
+      }
+
+
+      const data =
+        await response.json();
+
+
+      console.log(
+        'GIS + ML prediction result:',
+        data
+      );
+
+
+      setRiskResult(data);
+
+    }
+
+
+    catch (err) {
+
+      console.error(
+        'GIS + ML prediction error:',
+        err
+      );
+
+
+      setError(
+        err.message ||
+        'Unable to run ML prediction.'
+      );
+
+    }
+
+
+    finally {
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  // =====================================================
+  // RISK COLOR
+  // =====================================================
+
+  const getRiskColor = (category) => {
+
+    const value =
+      String(category || '').toLowerCase();
+
+
+    if (value.includes('critical')) {
+      return 'text-red-500';
+    }
+
+    if (value.includes('very high')) {
+      return 'text-red-400';
+    }
+
+    if (value.includes('high')) {
+      return 'text-orange-400';
+    }
+
+    if (value.includes('medium')) {
+      return 'text-yellow-400';
+    }
+
+    if (value.includes('low')) {
+      return 'text-lime-400';
+    }
+
+    return 'text-green-400';
+
+  };
+
+
+  // =====================================================
+  // RISK BACKGROUND
+  // =====================================================
+
+  const getRiskBackground = (category) => {
+
+    const value =
+      String(category || '').toLowerCase();
+
+
+    if (value.includes('critical')) {
+      return 'border-red-500/40 bg-red-500/10';
+    }
+
+    if (value.includes('very high')) {
+      return 'border-red-400/40 bg-red-400/10';
+    }
+
+    if (value.includes('high')) {
+      return 'border-orange-400/40 bg-orange-400/10';
+    }
+
+    if (value.includes('medium')) {
+      return 'border-yellow-400/40 bg-yellow-400/10';
+    }
+
+    if (value.includes('low')) {
+      return 'border-lime-400/30 bg-lime-400/5';
+    }
+
+    return 'border-green-400/30 bg-green-400/5';
+
+  };
+
+
+  // =====================================================
+  // PAGE
+  // =====================================================
+
+  return (
+
+    <div className="min-h-screen bg-background text-on-surface p-6">
+
+      <div className="max-w-[1600px] mx-auto">
+
+
+        {/* =================================================
+            HEADER
+        ================================================= */}
+
+        <div className="mb-6">
+
+          <div className="flex items-center gap-2 text-primary text-xs font-semibold tracking-widest uppercase mb-2">
+
+            <MapIcon size={16} />
+
+            Risk Monitoring
+
+          </div>
+
+
+          <h1 className="text-3xl md:text-4xl font-bold">
+
+            NER Landslide Risk Map
+
+          </h1>
+
+
+          <p className="text-on-surface-variant mt-2 max-w-3xl">
+
+            Interactive geospatial monitoring of
+            landslide-prone areas across the
+            North Eastern Region of India.
+
+          </p>
+
+        </div>
+
+
+
+        {/* =================================================
+            MAIN LAYOUT
+        ================================================= */}
+
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_390px] gap-5 items-start">
+
+
+          {/* =================================================
+              MAP
+          ================================================= */}
+
+          <div className="relative rounded-2xl overflow-hidden border border-white/10 bg-black/10 min-h-[650px]">
+
+            <MapContainer
+
+              center={NER_CENTER}
+
+              zoom={6}
+
+              scrollWheelZoom={true}
+
+              className="h-[650px] w-full"
+
+            >
+
+              <TileLayer
+
+                attribution="&copy; OpenStreetMap contributors"
+
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+
+              />
+
+
+              <MapClickHandler
+
+                onLocationSelect={
+                  handleLocationSelect
+                }
+
+              />
+
+
+              {selectedLocation && (
+
+                <Marker
+
+                  position={[
+                    selectedLocation.lat,
+                    selectedLocation.lng,
+                  ]}
+
+                >
+
+                  <Popup>
+
+                    <div className="text-sm">
+
+                      <strong>
+                        Selected Location
+                      </strong>
+
+                      <br />
+
+                      Latitude:{' '}
+
+                      {selectedLocation.lat.toFixed(5)}
+
+                      <br />
+
+                      Longitude:{' '}
+
+                      {selectedLocation.lng.toFixed(5)}
+
                     </div>
-</div>
-{/* Card 2 */}
-<div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-secondary-container to-secondary"></div>
-<div className="flex justify-between items-start">
-<span className="font-label-caps text-label-caps text-on-surface-variant">Critical Zones</span>
-<span className="material-symbols-outlined text-secondary-container">location_searching</span>
-</div>
-<div className="font-display-lg text-display-lg text-secondary-container mt-2" style={{ "textShadow": "0 0 10px rgba(255, 87, 26, 0.5)" }}>04</div>
-<div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-                        High risk thresholds met
+
+                  </Popup>
+
+                </Marker>
+
+              )}
+
+            </MapContainer>
+
+
+
+            {/* =================================================
+                MAP OVERLAY
+            ================================================= */}
+
+            <div className="absolute top-4 left-4 z-[1000]">
+
+              <div className="bg-black/75 backdrop-blur-md border border-white/10 rounded-xl px-4 py-3">
+
+                <div className="flex items-center gap-2 text-sm font-semibold">
+
+                  <Navigation
+                    size={16}
+                    className="text-primary"
+                  />
+
+                  NER Monitoring Area
+
+                </div>
+
+
+                <p className="text-xs text-white/60 mt-1">
+
+                  Click anywhere on the map
+                  to select a location
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            {/* =================================================
+                LEGEND
+            ================================================= */}
+
+            <div className="absolute bottom-5 left-5 z-[1000]">
+
+              <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-4">
+
+                <div className="text-xs font-bold mb-3">
+
+                  LANDSLIDE RISK
+
+                </div>
+
+
+                <div className="space-y-2 text-xs">
+
+                  <LegendItem
+                    label="Very Low"
+                    color="bg-green-500"
+                  />
+
+                  <LegendItem
+                    label="Low"
+                    color="bg-lime-500"
+                  />
+
+                  <LegendItem
+                    label="Medium"
+                    color="bg-yellow-500"
+                  />
+
+                  <LegendItem
+                    label="High"
+                    color="bg-orange-500"
+                  />
+
+                  <LegendItem
+                    label="Very High"
+                    color="bg-red-500"
+                  />
+
+                  <LegendItem
+                    label="Critical"
+                    color="bg-red-900"
+                  />
+
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          {/* =================================================
+              RIGHT PANEL
+          ================================================= */}
+
+          <div className="xl:sticky xl:top-5 space-y-4 max-h-[calc(100vh-40px)] overflow-y-auto pr-1">
+
+
+            {/* =================================================
+                LOCATION CARD
+            ================================================= */}
+
+            <div className="glass-panel rounded-2xl p-5 border border-white/10">
+
+              <div className="flex items-center gap-2 mb-4">
+
+                <Crosshair
+                  size={18}
+                  className="text-primary"
+                />
+
+                <h2 className="font-bold">
+
+                  Location Assessment
+
+                </h2>
+
+              </div>
+
+
+              <p className="text-sm text-on-surface-variant mb-4">
+
+                Click on the map to select a
+                location for risk assessment.
+
+              </p>
+
+
+              {selectedLocation ? (
+
+                <div className="grid grid-cols-2 gap-3">
+
+
+                  <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+
+                    <div className="text-[10px] text-on-surface-variant tracking-widest">
+
+                      LATITUDE
+
                     </div>
-</div>
-{/* Card 3 */}
-<div className="glass-panel p-md rounded-xl flex flex-col gap-2 relative overflow-hidden">
-<div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-fixed-dim to-primary-container"></div>
-<div className="flex justify-between items-start">
-<span className="font-label-caps text-label-caps text-on-surface-variant">Citizen Reports</span>
-<span className="material-symbols-outlined text-primary-fixed-dim">campaign</span>
-</div>
-<div className="font-display-lg text-display-lg text-primary-fixed-dim glow-text-primary mt-2">89</div>
-<div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1 flex items-center gap-1">
-<span className="text-tertiary-fixed-dim">98% verified</span> in past 24h
+
+
+                    <div className="font-mono text-sm mt-1">
+
+                      {selectedLocation.lat.toFixed(5)}
+
                     </div>
-</div>
-</div>
-{/* Bottom Area: Map Tools & Side Panel */}
-<div className="flex-1 flex gap-md min-h-0">
-{/* Map Controls (Left) */}
-<div className="flex flex-col gap-sm justify-end shrink-0 pointer-events-none">
-<div className="glass-panel rounded-full p-2 flex flex-col gap-2 pointer-events-auto">
-<button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-<span className="material-symbols-outlined">add</span>
-</button>
-<div className="w-full h-px bg-white/10 my-1"></div>
-<button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-<span className="material-symbols-outlined">remove</span>
-</button>
-</div>
-<div className="glass-panel rounded-full p-2 pointer-events-auto mt-2">
-<button className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary-fixed-dim hover:bg-white/5 transition-colors">
-<span className="material-symbols-outlined">my_location</span>
-</button>
-</div>
-</div>
-{/* Spacer for Map */}
-<div className="flex-1"></div>
-{/* Detail Panel (Right) */}
-<div className="w-full md:w-[400px] glass-panel rounded-xl flex flex-col h-full overflow-hidden border-t-4 border-error pointer-events-auto shrink-0 shadow-2xl">
-{/* Panel Header */}
-<div className="p-md border-b border-white/10 bg-surface/50">
-<div className="flex justify-between items-start mb-2">
-<div className="font-label-caps text-label-caps text-error flex items-center gap-2">
-<span className="material-symbols-outlined text-[16px]">crisis_alert</span>
-                                Selected Hotspot
-                            </div>
-<button className="text-on-surface-variant hover:text-on-surface transition-colors">
-<span className="material-symbols-outlined text-[20px]">close</span>
-</button>
-</div>
-<h2 className="font-headline-lg text-headline-lg text-on-surface">Gangtok, Sikkim</h2>
-<div className="font-data-numeric text-data-numeric text-on-surface-variant mt-1">27.3389° N, 88.6065° E</div>
-</div>
-{/* Panel Content */}
-<div className="p-md flex-1 overflow-y-auto flex flex-col gap-lg custom-scrollbar">
-{/* Risk Score */}
-<div className="flex flex-col items-center justify-center py-sm">
-<div className="relative w-32 h-32 flex items-center justify-center">
-{/* Simulated SVG Circle */}
-<svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-<circle cx="50" cy="50" fill="none" r="45" stroke="#1A1A1A" strokeWidth="8"></circle>
-<circle className="text-error" cx="50" cy="50" fill="none" r="45" stroke="#ffb4ab" strokeDasharray="283" strokeDashoffset="34" strokeWidth="8" style={{ "filter": "drop-shadow(0 0 4px rgba(255, 180, 171, 0.5))" }}></circle>
-</svg>
-<div className="text-center z-10">
-<div className="font-display-lg text-display-lg text-error leading-none">88</div>
-<div className="font-label-caps text-label-caps text-on-surface-variant mt-1">/ 100</div>
-</div>
-</div>
-<div className="font-label-caps text-label-caps text-error mt-4 tracking-widest">CRITICAL RISK</div>
-</div>
-{/* Telemetry Bars */}
-<div className="flex flex-col gap-md">
-{/* Metric 1 */}
-<div>
-<div className="flex justify-between font-label-caps text-label-caps mb-2">
-<span className="text-on-surface">Heavy Rainfall (24h)</span>
-<span className="text-secondary-container font-data-numeric">185mm</span>
-</div>
-<div className="h-2 rounded-full progress-track overflow-hidden relative">
-<div className="absolute top-0 left-0 h-full bg-secondary-container w-[85%]" style={{ "boxShadow": "0 0 10px rgba(255, 87, 26, 0.5)" }}></div>
-<div className="absolute top-0 left-[75%] h-full w-px bg-white/50 z-10"></div> {/* Threshold marker */}
-</div>
-</div>
-{/* Metric 2 */}
-<div>
-<div className="flex justify-between font-label-caps text-label-caps mb-2">
-<span className="text-on-surface">Soil Moisture Index</span>
-<span className="text-primary-fixed-dim font-data-numeric">62%</span>
-</div>
-<div className="h-2 rounded-full progress-track overflow-hidden relative">
-<div className="absolute top-0 left-0 h-full bg-primary-fixed-dim w-[62%]" style={{ "boxShadow": "0 0 10px rgba(0, 218, 248, 0.5)" }}></div>
-</div>
-</div>
-{/* Metric 3 */}
-<div>
-<div className="flex justify-between font-label-caps text-label-caps mb-2">
-<span className="text-on-surface">Slope Stability</span>
-<span className="text-error font-data-numeric">Marginal</span>
-</div>
-<div className="h-2 rounded-full progress-track overflow-hidden relative">
-<div className="absolute top-0 left-0 h-full bg-error w-[90%]" style={{ "boxShadow": "0 0 10px rgba(255, 180, 171, 0.5)" }}></div>
-</div>
-</div>
-</div>
-{/* Actions */}
-<div className="mt-auto pt-md flex flex-col gap-sm">
-<button className="w-full bg-primary-fixed-dim text-on-primary font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary-fixed transition-colors font-bold" onclick="window.location.href='screen6.html'">
-                                Issue Evacuation Warning
-                            </button>
-<button className="w-full border border-primary-fixed-dim text-primary-fixed-dim font-label-caps text-label-caps py-3 rounded-lg hover:bg-primary-fixed-dim/10 transition-colors">
-                                View Drone Imagery
-                            </button>
-</div>
-</div>
-</div>
-</div>
-</div>
+
+                  </div>
+
+
+                  <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+
+                    <div className="text-[10px] text-on-surface-variant tracking-widest">
+
+                      LONGITUDE
+
+                    </div>
+
+
+                    <div className="font-mono text-sm mt-1">
+
+                      {selectedLocation.lng.toFixed(5)}
+
+                    </div>
+
+                  </div>
+
+
+                  <div className="col-span-2 rounded-lg bg-white/5 border border-white/10 p-3">
+
+                    <div className="text-[10px] text-on-surface-variant tracking-widest">
+
+                      ASSESSMENT DATE
+
+                    </div>
+
+
+                    <input
+
+                      type="date"
+
+                      value={selectedDate}
+
+                      min="2024-01-01"
+
+                      max="2024-12-31"
+
+                      onChange={(event) => {
+
+                        setSelectedDate(
+                          event.target.value
+                        );
+
+                        setRiskResult(null);
+
+                        setError('');
+
+                      }}
+
+                      className="w-full mt-2 rounded-lg bg-black/30 border border-white/10 px-3 py-2 text-sm outline-none focus:border-primary"
+
+                    />
+
+                  </div>
+
+                </div>
+
+              ) : (
+
+                <div className="rounded-lg border border-dashed border-white/15 p-5 text-center">
+
+                  <Crosshair
+                    size={26}
+                    className="mx-auto text-white/30"
+                  />
+
+
+                  <p className="text-sm text-on-surface-variant mt-2">
+
+                    No location selected
+
+                  </p>
+
+
+                  <p className="text-xs text-white/40 mt-1">
+
+                    Click anywhere on the map
+
+                  </p>
+
+                </div>
+
+              )}
+
+            </div>
+
+
+
+            {/* =================================================
+                AI CARD
+            ================================================= */}
+
+            <div className="glass-panel rounded-2xl p-5 border border-primary/20 bg-primary/5">
+
+              <div className="flex items-center gap-2 text-primary">
+
+                <BrainCircuit size={18} />
+
+                <span className="text-xs font-semibold tracking-widest uppercase">
+
+                  AI Risk Prediction
+
+                </span>
+
+              </div>
+
+
+              <h2 className="text-xl font-bold mt-2">
+
+                Machine Learning Assessment
+
+              </h2>
+
+
+              <p className="text-sm text-on-surface-variant mt-2">
+
+                GIS automatically extracts terrain
+                and rainfall data before running
+                the XGBoost prediction model.
+
+              </p>
+
+
+              {/* =================================================
+                  BUTTON
+              ================================================= */}
+
+              <button
+
+                onClick={runMLAssessment}
+
+                disabled={
+                  !selectedLocation ||
+                  !selectedDate ||
+                  loading
+                }
+
+                className="w-full mt-4 py-3 rounded-lg bg-primary text-on-primary font-semibold disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 transition-all flex items-center justify-center gap-2"
+
+              >
+
+                {loading ? (
+
+                  <>
+
+                    <Loader2
+                      size={18}
+                      className="animate-spin"
+                    />
+
+                    Getting GIS Data...
+
+                  </>
+
+                ) : (
+
+                  <>
+
+                    <BrainCircuit
+                      size={18}
+                    />
+
+                    Run ML Risk Assessment
+
+                  </>
+
+                )}
+
+              </button>
+
+
+
+              {/* =================================================
+                  ERROR
+              ================================================= */}
+
+              {error && (
+
+                <div className="mt-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3">
+
+                  <div className="flex gap-2 items-start">
+
+                    <AlertTriangle
+                      size={17}
+                      className="text-red-400 mt-0.5 shrink-0"
+                    />
+
+
+                    <p className="text-xs text-red-300">
+
+                      {error}
+
+                    </p>
+
+                  </div>
+
+                </div>
+
+              )}
+
+
+
+              {/* =================================================
+                  RESULT
+              ================================================= */}
+
+              {riskResult && (
+
+                <div className="mt-4">
+
+
+                  {/* =============================================
+                      RESULT HEADER
+                  ============================================= */}
+
+                  <div className="flex items-center justify-between mb-3">
+
+                    <div className="text-xs text-on-surface-variant uppercase tracking-widest">
+
+                      Prediction Result
+
+                    </div>
+
+
+                    <CheckCircle
+                      size={18}
+                      className="text-green-400"
+                    />
+
+                  </div>
+
+
+
+                  {/* =============================================
+                      MAIN RISK BOX
+                  ============================================= */}
+
+                  <div
+
+                    className={
+
+                      'rounded-xl border p-4 ' +
+
+                      getRiskBackground(
+                        riskResult.risk_category
+                      )
+
+                    }
+
+                  >
+
+                    <div className="text-xs text-on-surface-variant">
+
+                      RISK CATEGORY
+
+                    </div>
+
+
+                    <div
+
+                      className={
+
+                        'text-4xl font-black mt-1 ' +
+
+                        getRiskColor(
+                          riskResult.risk_category
+                        )
+
+                      }
+
+                    >
+
+                      {riskResult.risk_category}
+
+                    </div>
+
+
+
+                    {/* =========================================
+                        PROBABILITY + SCORE
+                    ========================================= */}
+
+                    <div className="grid grid-cols-2 gap-3 mt-4">
+
+
+                      <div className="rounded-lg bg-black/20 p-3">
+
+                        <div className="text-xs text-on-surface-variant">
+
+                          Probability
+
+                        </div>
+
+
+                        <div className="text-2xl font-bold mt-1">
+
+                          {(
+                            Number(
+                              riskResult.risk_probability
+                            ) * 100
+
+                          ).toFixed(1)}
+
+                          %
+
+                        </div>
+
+                      </div>
+
+
+
+                      <div className="rounded-lg bg-black/20 p-3">
+
+                        <div className="text-xs text-on-surface-variant">
+
+                          Risk Score
+
+                        </div>
+
+
+                        <div className="text-2xl font-bold mt-1">
+
+                          {Number(
+                            riskResult.risk_score
+                          ).toFixed(1)}
+
+                          <span className="text-sm text-white/40">
+
+                            {' '}/ 10
+
+                          </span>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+
+                  {/* =============================================
+                      GIS FACTORS
+                  ============================================= */}
+
+                  {riskResult.contributing_factors && (
+
+                    <div className="mt-4">
+
+                      <div className="text-xs text-on-surface-variant uppercase tracking-widest mb-2">
+
+                        GIS Contributing Factors
+
+                      </div>
+
+
+                      <div className="space-y-2">
+
+
+                        <FactorRow
+                          label="Elevation"
+                          value={
+                            riskResult
+                              .contributing_factors
+                              .elevation
+                          }
+                          unit="m"
+                        />
+
+
+                        <FactorRow
+                          label="Slope"
+                          value={
+                            riskResult
+                              .contributing_factors
+                              .slope
+                          }
+                          unit="°"
+                        />
+
+
+                        <FactorRow
+                          label="Rainfall (1 Day)"
+                          value={
+                            riskResult
+                              .contributing_factors
+                              .rainfall_1d
+                          }
+                          unit="mm"
+                        />
+
+
+                        <FactorRow
+                          label="Rainfall (7 Days)"
+                          value={
+                            riskResult
+                              .contributing_factors
+                              .rainfall_7d
+                          }
+                          unit="mm"
+                        />
+
+
+                        <FactorRow
+                          label="Rainfall (30 Days)"
+                          value={
+                            riskResult
+                              .contributing_factors
+                              .rainfall_30d
+                          }
+                          unit="mm"
+                        />
+
+                      </div>
+
+                    </div>
+
+                  )}
+
+
+
+                  {/* =============================================
+                      MODEL
+                  ============================================= */}
+
+                  <div className="mt-3 text-xs text-white/40">
+
+                    Model:{' '}
+
+                    {riskResult.model_version}
+
+                  </div>
+
+                </div>
+
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
+
   );
+
 };
+
+
+// =====================================================
+// FACTOR ROW
+// =====================================================
+
+const FactorRow = ({
+  label,
+  value,
+  unit,
+}) => {
+
+  const numericValue =
+    Number(value);
+
+
+  return (
+
+    <div className="flex items-center justify-between rounded-lg bg-white/5 p-3">
+
+      <span className="text-xs text-on-surface-variant">
+
+        {label}
+
+      </span>
+
+
+      <span className="font-mono text-sm font-semibold">
+
+        {Number.isFinite(numericValue)
+          ? numericValue.toFixed(2)
+          : 'N/A'}
+
+        {unit && (
+
+          <span className="text-white/40 ml-1">
+
+            {unit}
+
+          </span>
+
+        )}
+
+      </span>
+
+    </div>
+
+  );
+
+};
+
+
+// =====================================================
+// LEGEND ITEM
+// =====================================================
+
+const LegendItem = ({
+  label,
+  color,
+}) => {
+
+  return (
+
+    <div className="flex items-center gap-2">
+
+      <span
+
+        className={
+          'w-3 h-3 rounded-sm ' +
+          color
+        }
+
+      />
+
+      <span>
+        {label}
+      </span>
+
+    </div>
+
+  );
+
+};
+
+
+// =====================================================
+// EXPORT
+// =====================================================
 
 export default MonitoringPage;
